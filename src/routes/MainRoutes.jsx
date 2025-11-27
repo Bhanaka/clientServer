@@ -18,6 +18,9 @@ const SamplePage = Loadable(lazy(() => import('pages/extra-pages/sample-page')))
 // render - brand management page
 const BrandManagement = Loadable(lazy(() => import('pages/brandManagement-page')));
 
+// render - product management page
+const ProductManagement = Loadable(lazy(() => import('pages/productManagement-page')));
+
 // ==============================|| MAIN ROUTING ||============================== //
 
 const MainRoutes = {
@@ -56,6 +59,10 @@ const MainRoutes = {
     {
       path: 'brandManagement',
       element: <BrandManagement />
+    },
+    {
+      path: 'productManagement',
+      element: <ProductManagement />
     }
   ]
 };

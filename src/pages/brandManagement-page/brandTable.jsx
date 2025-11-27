@@ -9,9 +9,13 @@ import {
     TableCell,
     Box,
     Stack,
-    Typography
+    Typography,
+    Button
 } from '@mui/material';
 import Dot from 'components/@extended/Dot';
+import { useEffect, useState } from 'react';
+
+import brandApi from '../../api/productBrandApi';
 
 function descendingComparator(a, b, orderBy) {
     if (b[orderBy] < a[orderBy]) return -1;
@@ -39,7 +43,8 @@ const headCells = [
     { id: 'brandNo', align: 'left', disablePadding: false, label: 'No' },
     { id: 'brandCode', align: 'left', disablePadding: false, label: 'Code No.' },
     { id: 'brandName', align: 'left', disablePadding: false, label: 'Name' },
-    { id: 'brandIsActive', align: 'right', disablePadding: false, label: 'isActive' }
+    { id: 'brandIsActive', align: 'left', disablePadding: false, label: 'isActive' },
+    { id: 'brandAction', align: 'left', disablePadding: false, label: 'Action' }
 ];
 
 function BrandTableHead({ order, orderBy }) {
@@ -91,10 +96,43 @@ function OrderStatus({ status }) {
     );
 }
 
-export default function BrandTable() {
+export default function BrandTable({ onView, onEdit }) {
+    const [brands, setBrands] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const order = 'asc';
     const orderBy = 'brandNo';
 
+    useEffect(() => {
+        const fetchBrands = async () => {
+            try {
+                const data = await brandApi.getAll();
+                setBrands(data);
+                console.log('brands :', brands)
+            } catch (err) {
+                console.error('Error fetching brands:', err);
+                setError('Failed to load brand data');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchBrands();
+    }, []);
+
+    const handleViewClick = (row) => {
+        console.log(' view click row : ', row);
+        // sent full item to parent
+        onView(row);
+    };
+    const handleEditClick = (row) => {
+        console.log('edit click row : ', row);
+        //sent full item to parent
+        onEdit(row);
+    };
+    const handleDeleteClick = (row) => {
+        console.log('delete click row :', row);
+    }
     return (
         <Box>
             <TableContainer
@@ -110,12 +148,50 @@ export default function BrandTable() {
                 <Table aria-labelledby="tableTitle">
                     <BrandTableHead order={order} orderBy={orderBy} />
                     <TableBody>
-                        <TableRow>
-                            <TableCell>1</TableCell>
-                            <TableCell>BR-001</TableCell>
-                            <TableCell>Apple</TableCell>
-                            <TableCell align="right">Yes</TableCell>
-                        </TableRow>
+                        {brands.length > 0 ? (
+                            brands.map((brand, index) => (
+                                <TableRow key={brand.id || index}>
+                                    <TableCell>{index + 1}</TableCell>
+                                    <TableCell>{brand.productName}</TableCell>
+                                    <TableCell>{brand.productCode}</TableCell>
+                                    <TableCell align="left">{brand.productIsActive === true ? 'Yes' : 'No'}</TableCell>
+                                    <TableCell align="center">
+                                        <Stack direction="row" spacing={1} justifyContent="center">
+                                            <Button
+                                                variant='outlined'
+                                                color='success'
+                                                size='small'
+                                                onClick={() => handleViewClick(brand)}
+                                            >
+                                                View
+                                            </Button>
+                                            <Button
+                                                variant="outlined"
+                                                color="primary"
+                                                size="small"
+                                                onClick={() => handleEditClick(brand)}
+                                            >
+                                                Edit
+                                            </Button>
+                                            <Button
+                                                variant="outlined"
+                                                color="error"
+                                                size="small"
+                                                onClick={() => handleDeleteClick(brand)}
+                                            >
+                                                Delete
+                                            </Button>
+                                        </Stack>
+                                    </TableCell>
+                                </TableRow>
+                            ))
+                        ) : (
+                            <TableRow>
+                                <TableCell colSpan={4} align="center">
+                                    No brand data found
+                                </TableCell>
+                            </TableRow>
+                        )}
                     </TableBody>
                 </Table>
             </TableContainer>
